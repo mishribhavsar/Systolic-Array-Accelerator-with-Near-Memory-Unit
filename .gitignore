@@ -1,0 +1,19 @@
+# Vivado project (regenerate with vivado_create_project.tcl)
+vivado_project/
+.Xil/
+*.log
+*.jou
+*.str
+*.pb
+
+# Simulation outputs
+*.vvp
+*.vcd
+*.wdb
+nmu_log.csv
+xsim.dir/
+
+# OS metadata
+Thumbs.db
+Desktop.ini
+.DS_Store
