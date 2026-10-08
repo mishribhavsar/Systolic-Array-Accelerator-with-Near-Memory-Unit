@@ -1,12 +1,15 @@
-# Systolic Array Accelerator with Near-Memory Unit (NMU)
+# 8×8 Systolic Array CNN Accelerator with Fused Post-Processing
 
 An 8×8 weight-stationary systolic array in Verilog RTL for CNN inference, with a
-Near-Memory Unit that applies bias, activation, quantisation and pooling to the
-array output on its way into on-chip memory. This avoids a separate pass over
-memory for each post-processing step.
+fused post-processing pipeline that applies bias, activation, quantisation and
+pooling to the array output on its way into the on-chip output buffer. This
+avoids a separate pass over memory for each post-processing step.
+
+> Module names keep the original `nmu` / `near_memory_*` prefixes ("NMU-In" =
+> input buffers, "NMU-Out" = post-processing + output buffer).
 
 - **Language / tools:** Verilog-2001, Xilinx Vivado, Icarus Verilog
-- **Target device:** Zynq-7000 XC7Z020 (`xc7z020clg400-1`, PYNQ-Z2)
+- **Vivado project part:** Zynq-7000 XC7Z020 (`xc7z020clg400-1`, PYNQ-Z2); RTL + simulation only
 - **Verification:** self-checking testbench with a golden reference model.
   26 / 26 tests and 4,892 output checks pass, with 0 errors.
 
@@ -15,7 +18,7 @@ memory for each post-processing step.
 ## Architecture
 
 ```
-            serial_in / serial_out (17 pins)
+            serial_in / serial_out (17 ports)
                          │
             ┌────────────▼─────────────┐
             │ systolic_nmu_top_wrapper │  serial-shift I/O wrapper
@@ -59,7 +62,7 @@ memory for each post-processing step.
 
 One 8×8 × 8×8 tile (512 MACs) takes **56 clock cycles** from start to done.
 
-### Near-memory post-processing pipeline
+### Fused post-processing pipeline
 
 ```
 psum (32b) → +bias (32b, saturating) → ReLU / Leaky-ReLU (32b) → >>> shift, saturate (16b) → 2×2 max-pool (16b) → Output BRAM
@@ -96,7 +99,7 @@ All reads are synchronous, with 1-cycle latency.
 
 | Module | File | Description |
 |---|---|---|
-| `systolic_nmu_top_wrapper` | `rtl/systolic_nmu_top_wrapper.v` | Serial-shift I/O wrapper (~560 core signals → 17 pins) |
+| `systolic_nmu_top_wrapper` | `rtl/systolic_nmu_top_wrapper.v` | Serial-shift I/O wrapper (~560 core signals → 17 ports) |
 | `systolic_nmu_top` | `rtl/systolic_nmu_top.v` | Top-level integration, input skew, bias BRAM |
 | `config_regs` | `rtl/config_regs.v` | Memory-mapped configuration registers |
 | `controller_fsm` | `rtl/controller_fsm.v` | 6-state control FSM, BRAM address generation |
